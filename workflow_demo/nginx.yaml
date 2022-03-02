@@ -1,0 +1,20 @@
+#简单模板，定义了工作流以创建具有两个容器的pod，
+#其中一个容器装有curl（仅带有curl的基于alpine的镜像），
+#另一个是Nginx Sidecar容器（Sidecar作为第二进程与服务一起运行）并提供“平台基础架构功能”。
+#在这里curl是一个“主”容器，它轮询nginxSidecar容器，直到准备好处理请求为止。
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow    #Argo Workflow CRD 在K8s上显示
+metadata:
+  generateName: sidecar-nginx-      #workflow的配置/spec名字
+
+spec:
+  entrypoint: sidecar-nginx-example     #Invoke side-car-example template
+  templates:
+    - name: sidecar-nginx-example  #template的名字，要和spec.entrypoint一样
+      container:
+        image: appropriate/curl         #Alpine container with CURL
+        command: [sh,-c]
+        args: ["until 'curl -G 'http://127.0.0.1/' >& /tmp/out'; do echo sleep && sleep 1; done && cat /tmp/out"]
+      sidecars:
+      - name: nginx
+        image: nginx:1.13
