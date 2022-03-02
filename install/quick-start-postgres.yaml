@@ -1288,7 +1288,6 @@ kind: Service
 metadata:
   name: argo-server
 spec:
-  type: NodePort
   ports:
   - name: web
     port: 2746

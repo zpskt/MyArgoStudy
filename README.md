@@ -35,7 +35,7 @@ argo可以有条件的开启容器，比如循环，when，等类似的语句使
 
     cd MyArgoStudy  
     cd install  
-安装argocli  
+安装argocli(v3.2.8)  
 
     gunzip argo-linux-amd64.gz
     chmod +x argo-linux-amd64
