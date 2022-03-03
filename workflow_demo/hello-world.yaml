@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: hello-world-  #generateName才是真正决定workflow名字的，而不是刚才建的文件名
+  labels:
+    workflows.argoproj.io/archive-strategy: "false"
+  annotations:
+    workflows.argoproj.io/description: |
+      This is a simple hello world example.
+      You can also run it in Python: https://couler-proj.github.io/couler/examples/#hello-world
+spec:
+  entrypoint: whalesay  #entrypoint表示第一个执行的template
+  #因为之后的workflow可能会有多个模板，互相嵌套，那么设置一个entrypoint模板让工作流知道从哪个模板开始执行，类似于main函数，非entrypoint模板的就作为类似于函数的作用
+  templates:
+  - name: whalesay
+    container:
+      image: docker/whalesay:latest
+      command: [cowsay]
+      args: ["hello world"]

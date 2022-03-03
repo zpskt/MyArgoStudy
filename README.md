@@ -2,7 +2,8 @@
 进行Argo的学习
 ## 相关链接
 [官网:  https://argoproj.github.io](https://argoproj.github.io/)   
-[github官网:  https://github.com/argoproj/argo-workflows](https://github.com/argoproj/argo-workflows)
+[github官网:  https://github.com/argoproj/argo-workflows](https://github.com/argoproj/argo-workflows)  
+argo使用部分源自博主[https://blog.csdn.net/qq_41819823/article/details/116164076](https://blog.csdn.net/qq_41819823/article/details/116164076)  
 ## Argo is ？
 go语言写的。  
 Argo官方被写为：The workflow engine for Kubernetes
@@ -32,7 +33,8 @@ Argo支持几种不同的方式来定义Kubernetes清单：kubectl应用程序�
 argo可以有条件的开启容器，比如循环，when，等类似的语句使用不同pod
 ### 安装流程
 我的github：[https://github.com/zpskt/MyArgoStudy](https://github.com/zpskt/MyArgoStudy)
-git clone git@github.com:zpskt/MyArgoStudy.git
+
+    git clone git@github.com:zpskt/MyArgoStudy.git
 配置文件就用我install里面的quick-start-postgres.yaml
 到当前git库的根目录  
 cd MyArgoStudy  
@@ -54,3 +56,27 @@ cd install
 
 此时打开浏览器：http://127.0.0.1:2746  
 用install创建的argoworkflow只有两个pod，argo-server和workflow-controller。  
+### Get Start proj  
+现在运行一个官方demo
+首先在docker中打开容器，以便后面的对比  
+
+    docker run docker/whalesay cowsay "hello world"  
+whalesay是一个镜像，内部可以使用cowsay命令，cowsay是Linux的一个比较有意思的包，大家喜欢的话可以去百度一下
+，就是让一个动物说出参数中的话
+比如 cowsay “hhh”, 就会画一个牛说"hhh"(动物是可以变的，只不过docker在弄whalesay镜像时为了和docker鲸鱼的形象符合所以变成了鲸鱼，所以也叫whalesay，本质上就是运行了一个cowsay命令)
+
+这个whalesay镜像呢，在Argo中就叫做模板template
+我们使用了template：whalesay，输入相关参数，在输入容器信息就相当于Argo 调用docker执行了刚才的命令，这就是我们argo 第一个workflow的含义。
+
+官方给的helloworld我放在workflow_demo文件夹了  
+
+    cd ../workflow_demo
+    argo submit -n argo --watch ./hello-world.yaml  
+para： 
+
+    argo submit -n argo --watch ./hello-world-para.yaml -p message="goodbye world"
+steps案例：  
+我们将了解如何创建多步骤工作流、如何在工作流规范中定义多个模板以及如何创建嵌套工作流。请务必阅读评论，因为它们提供了有用的解释。  
+上面的工作流程规范打印了三种不同风格的“hello”。该hello-hello-hello模板由三个steps. 命名的第一步hello1将按顺序运行，而接下来的两个步骤命名为hello2a并将hello2b彼此并行运行。使用 argo CLI 命令，我们可以以图形方式显示此工作流规范的执行历史记录，这表明步骤命名hello2a并hello2b彼此并行运行  
+
+    argo submit -n argo --watch ./steps.yaml

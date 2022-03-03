@@ -1357,42 +1357,37 @@ spec:
       labels:
         app: argo-server
     spec:
+      serviceAccountName: argo-server
       containers:
-      - args:
-        - server
-        - --namespaced
-        - --auth-mode
-        - server
-        - --auth-mode
-        - client
-        env: []
-        image: quay.io/argoproj/argocli:latest
-        name: argo-server
-        ports:
-        - containerPort: 2746
-          name: web
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 2746
-            scheme: HTTPS
-          initialDelaySeconds: 10
-          periodSeconds: 20
-        securityContext:
-          capabilities:
-            drop:
-            - ALL
-        volumeMounts:
-        - mountPath: /tmp
-          name: tmp
-      nodeSelector:
-        kubernetes.io/os: linux
+        - name: argo-server
+          image: quay.io/argoproj/argocli:latest
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+          args: [ server ]
+          env: []
+          ports:
+            - name: web
+              containerPort: 2746
+          readinessProbe:
+            httpGet:
+              port: 2746
+              scheme: HTTPS
+              path: /
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir: { }
       securityContext:
         runAsNonRoot: true
-      serviceAccountName: argo-server
-      volumes:
-      - emptyDir: {}
-        name: tmp
+      nodeSelector:
+        kubernetes.io/os: linux
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1535,3 +1530,20 @@ spec:
       securityContext:
         runAsNonRoot: true
       serviceAccountName: argo
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: argo-server
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /$2
+    ingress.kubernetes.io/protocol: https # Traefik
+    nginx.ingress.kubernetes.io/backend-protocol: https # ingress-nginx
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: argo-server
+              servicePort: 2746
+            path: /argo(/|$)(.*)

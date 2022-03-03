@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: steps-
+spec:
+  entrypoint: hello-hello-hello  #第一个执行的templates是什么
+
+  # 该规范包含两个templates：hello-hello-hello 和whalsay
+  templates:
+    - name: hello-hello-hello
+      # 不同于只执行一个容器
+      # 这个模板有着一系列的步骤
+      steps:
+        - - name: hello1            # 双破折号  hello1 在下面的步骤之前执行-第一步执行
+            template: whalesay
+            arguments:
+              parameters:
+                - name: message
+                  value: "hello1"
+        - - name: hello2a           # 双破折号  第二步执行
+            template: whalesay
+            arguments:
+              parameters:
+                - name: message
+                  value: "hello2a"
+          - name: hello2b           # 单破折号 => 和上一步同时执行
+            template: whalesay
+            arguments:
+              parameters:
+                - name: message
+                  value: "hello2b"
+
+    # 这个template和上一个相同
+    - name: whalesay
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: docker/whalesay
+        command: [cowsay]
+        args: ["{{inputs.parameters.message}}"]
