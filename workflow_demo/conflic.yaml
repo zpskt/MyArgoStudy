@@ -1,0 +1,65 @@
+#条件句
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: coinflip-
+spec:
+  entrypoint: coinflip
+  templates:
+    - name: coinflip
+      steps:
+        # 掷硬币
+        - - name: flip-coin
+            template: flip-coin
+        # 评估结果并行
+        - - name: heads
+            template: heads                       # call heads template if "heads"
+            when: "{{steps.flip-coin.outputs.result}} == heads"
+          - name: tails
+            template: tails                       # call tails template if "tails"
+            when: "{{steps.flip-coin.outputs.result}} == tails"
+        - - name: flip-again
+            template: flip-coin
+        - - name: complex-condition
+            template: heads-tails-or-twice-tails
+            # 如果第一次翻转是“正面”而第二个是“反面”或两者都是“反面”，则调用
+            when: >-
+              ( {{steps.flip-coin.outputs.result}} == heads &&
+                {{steps.flip-again.outputs.result}} == tails
+              ) ||
+              ( {{steps.flip-coin.outputs.result}} == tails &&
+                {{steps.flip-again.outputs.result}} == tails )
+          - name: heads-regex
+            template: heads                       # call heads template if ~ "hea"
+            when: "{{steps.flip-again.outputs.result}} =~ hea"
+          - name: tails-regex
+            template: tails                       # call heads template if ~ "tai"
+            when: "{{steps.flip-again.outputs.result}} =~ tai"
+
+    #根据随机数返回正面或反面
+    - name: flip-coin
+      script:
+        image: python:alpine3.6
+        command: [python]
+        source: |
+          import random
+          result = "heads" if random.randint(0,1) == 0 else "tails"
+          print(result)
+
+    - name: heads
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args: ["echo \"it was heads\""]
+
+    - name: tails
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args: ["echo \"it was tails\""]
+
+    - name: heads-tails-or-twice-tails
+      container:
+        image: alpine:3.6
+        command: [sh, -c]
+        args: ["echo \"it was heads the first flip and tails the second. Or it was two times tails.\""]

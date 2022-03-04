@@ -57,6 +57,9 @@ cd install
 此时打开浏览器：http://127.0.0.1:2746  
 用install创建的argoworkflow只有两个pod，argo-server和workflow-controller。  
 ### Get Start proj  
+argo server官方案例：
+[https://github.com/zpskt/argo-workflows/tree/master/examples](https://github.com/zpskt/argo-workflows/tree/master/examplesa)  
+
 现在运行一个官方demo
 首先在docker中打开容器，以便后面的对比  
 
